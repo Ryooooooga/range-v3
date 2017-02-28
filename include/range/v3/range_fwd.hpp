@@ -38,6 +38,10 @@
 /// \defgroup group-concepts Concepts
 /// Concept-checking classes and utilities
 
+RANGES_DIAGNOSTIC_PUSH
+RANGES_DIAGNOSTIC_IGNORE_PRAGMAS
+RANGES_DIAGNOSTIC_IGNORE_CXX17_COMPAT
+
 namespace ranges
 {
     inline namespace v3
@@ -261,14 +265,8 @@ namespace ranges
             template<typename...Ts>
             void valid_exprs(Ts &&...);
 
-            template<typename I, typename S>
-            struct common_cursor;
-
             template<typename I, typename D = meta::_t<difference_type<I>>>
             struct counted_cursor;
-
-            template<typename I>
-            struct move_cursor;
 
             template<typename I>
             struct move_into_cursor;
@@ -277,15 +275,17 @@ namespace ranges
             struct from_end_;
 
             template<typename ...Ts>
-            void ignore_unused(Ts &&...)
-            {}
+            constexpr int ignore_unused(Ts &&...)
+            {
+                return 42;
+            }
 
             #if defined(__clang__) && !defined(_LIBCPP_VERSION)
-                template <class T, class Arg = T>
+                template<class T, class Arg = T>
                 struct is_trivially_copy_assignable
                   : meta::bool_<__is_trivially_assignable(T &, Arg const&)>
                 {};
-                template <class T, class Arg = T>
+                template<class T, class Arg = T>
                 struct is_trivially_move_assignable
                   : meta::bool_<__is_trivially_assignable(T &, Arg &&)>
                 {};
@@ -398,9 +398,17 @@ namespace ranges
                  cardinality C = range_cardinality<BaseRng>::value>
         struct view_adaptor;
 
+        /// \cond
+        inline namespace _common_iterator
+        {
+            template<typename I, typename S>
+            struct common_iterator;
+        }
+        /// \endcond
+
         template<typename I, typename S>
-        using common_iterator =
-            meta::if_<std::is_same<I, S>, I, basic_iterator<detail::common_cursor<I, S>>>;
+        using common_iterator_t =
+            meta::if_<std::is_same<I, S>, I, common_iterator<I, S>>;
 
         template<typename First, typename Second>
         struct compressed_pair;
@@ -430,6 +438,9 @@ namespace ranges
 
         template<typename T, bool RValue = false>
         struct reference_wrapper;
+
+        template<typename>
+        struct is_reference_wrapper;
 
         template<typename T>
         using rvalue_reference_wrapper = reference_wrapper<T, true>;
@@ -488,8 +499,7 @@ namespace ranges
             basic_iterator<detail::counted_cursor<I, D>>;
 
         template<typename I>
-        using move_iterator =
-            basic_iterator<detail::move_cursor<I>>;
+        struct move_iterator;
 
         template<typename I>
         using move_into_iterator =
@@ -757,5 +767,7 @@ namespace ranges
         }
     }
 }
+
+RANGES_DIAGNOSTIC_POP
 
 #endif

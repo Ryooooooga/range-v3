@@ -55,6 +55,8 @@ namespace ranges
                     return std::forward<Rng>(rng);
                 }
 
+                template<class T> struct foo { using type = typename T::not_there; };
+
             #ifndef RANGES_DOXYGEN_INVOKED
                 template<typename Rng, typename C = ordered_less, typename P = ident,
                     CONCEPT_REQUIRES_(!Concept<Rng, C, P>())>

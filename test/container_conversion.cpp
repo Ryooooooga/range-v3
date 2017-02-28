@@ -24,6 +24,15 @@
 #include "./simple_test.hpp"
 #include "./test_utils.hpp"
 
+template<class T> struct undef;
+
+struct common_pair1 : std::pair<int, std::string> {};
+struct common_pair2 : std::pair<int const, std::string> {};
+struct proxy_reference {
+    operator common_pair1() const;
+    operator common_pair2() const;
+};
+
 int main()
 {
     using namespace ranges;
